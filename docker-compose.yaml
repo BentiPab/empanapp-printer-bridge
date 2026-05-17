@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  empanapp-bridge:
+    build: .
+    container_name: empanapp-bridge-container
+    ports:
+      - "3001:3001"
+    environment:
+      - PRINTER_IP=192.168.18.14   # 👈 Asegurate de poner la IP real de tu ticketera Wi-Fi
+      - PRINTER_PORT=9100
+    restart: always

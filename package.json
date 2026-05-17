@@ -1,0 +1,25 @@
+{
+  "name": "empanapp-printer-bridge",
+  "version": "1.0.0",
+  "description": "Bridge printer for empanapp",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "tsx watch index.ts",
+    "start": "tsx index.ts",
+    "docker:build": "docker compose up -d --build"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "node-thermal-printer": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.8.0",
+    "tsx": "^4.22.1",
+    "typescript": "^6.0.3"
+  }
+}
