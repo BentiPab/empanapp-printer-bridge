@@ -1,10 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import { printTicket } from "../printer/handlePrint";
-
+import 'dotenv/config';
+import { iniciarNgrok } from './ngrok';
 
 const app = express();
-app.use(cors()); 
+app.use(cors({origin: "https://www.empana.com.ar", allowedHeaders: ['Content-Type', 'ngrok-skip-browser-warning']})); 
 app.use(express.json());
 
 app.post('/print', async (req, res) => {
@@ -22,6 +23,10 @@ app.post('/print', async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
+
+
+
+app.listen(3001,  () => {
   console.log('🚀 Puente de Impresión Empanapp corriendo en http://localhost:3001');
+  iniciarNgrok()
 });
