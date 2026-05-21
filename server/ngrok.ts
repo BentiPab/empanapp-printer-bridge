@@ -20,6 +20,7 @@ export async function iniciarNgrok(): Promise<void> {
     // Levantamos el endpoint apuntando a nuestro puerto local y usando el dominio estático
     const tunnel = await session.httpEndpoint()
       .domain(domain)
+      .forwardsTo("localhost:3001")
       .listen();
 
     console.log(`🚀 Túnel seguro de ngrok activado exitosamente!`);
