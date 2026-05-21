@@ -5,8 +5,16 @@ import 'dotenv/config';
 import { iniciarNgrok } from './ngrok';
 
 const app = express();
-app.use(cors({origin: "https://www.empana.com.ar", allowedHeaders: ['Content-Type', 'ngrok-skip-browser-warning']})); 
+app.use(cors({
+  origin: "https://www.empana.com.ar",
+  methods: ["POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "ngrok-skip-browser-warning"],
+  credentials: true
+}));
+
+app.options('*', cors());
 app.use(express.json());
+
 
 app.post('/print', async (req, res) => {
   const sale = req.body;
