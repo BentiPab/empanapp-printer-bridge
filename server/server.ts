@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { printTicket } from "../printer/handlePrint";
 import 'dotenv/config';
-import { iniciarNgrok } from './ngrok';
+import { initNgrok } from './ngrok';
 
 const app = express();
 app.use(cors({
@@ -33,10 +33,11 @@ app.post('/print', async (req, res) => {
   }
 });
 
+export function initExpress() {
+  app.listen(3001, '0.0.0.0', () => {
+    console.log('🚀 3. Express escuchando nativamente en el puerto 3001');
+  });
+}
 
 
-
-app.listen(3001, "0.0.0.0", () => {
-  console.log('🚀 Puente de Impresión Empanapp corriendo en http://localhost:3001');
-  iniciarNgrok()
-});
+initNgrok()
