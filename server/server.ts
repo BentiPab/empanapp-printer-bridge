@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { printTicket } from "../printer/handlePrint";
 import 'dotenv/config';
-import { initNgrok } from './ngrok';
 
 const app = express();
 app.use(cors({
@@ -40,4 +39,4 @@ export function initExpress() {
 }
 
 
-initNgrok()
+initExpress()
