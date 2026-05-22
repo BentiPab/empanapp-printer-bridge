@@ -21,6 +21,7 @@ export async function iniciarNgrok(): Promise<void> {
     const tunnel = await session.httpEndpoint()
       .domain(domain)
       .forwardsTo("localhost:3001")
+      .requestHeader("ngrok-skip-browser-warning", "true")
       .listen();
 
     console.log(`🚀 Túnel seguro de ngrok activado exitosamente!`);
