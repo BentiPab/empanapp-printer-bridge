@@ -13,12 +13,12 @@ app.post('/print', async (req, res) => {
 
       const printRes = await printTicket(sale)
       if (!printRes.success) {
-        res.status(500).json({ success: false, error: printRes.message });
+        return res.status(500).json({ success: false, error: printRes.message });
       } 
-      res.status(200).json({message: "Printing confirmed!"})
+      return res.status(200).json({message: "Printing confirmed!"})
   } catch (error) {
     console.error("Error en el puente de impresión:", error);
-    res.status(500).json({ success: false, error: (error as Error).message });
+    return res.status(500).json({ success: false, error: (error as Error).message });
   }
 });
 
