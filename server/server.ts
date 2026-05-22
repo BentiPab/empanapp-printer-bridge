@@ -9,16 +9,12 @@ app.use(cors({
   origin: "https://www.empana.com.ar",
   methods: ["POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "ngrok-skip-browser-warning"],
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
 
 
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  next();
-});
+
 app.use(express.json());
 
 
