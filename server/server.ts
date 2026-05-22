@@ -36,7 +36,7 @@ app.post('/print', async (req, res) => {
 
 
 
-app.listen(3001,  () => {
+app.listen(3001, "0.0.0.0" () => {
   console.log('🚀 Puente de Impresión Empanapp corriendo en http://localhost:3001');
   iniciarNgrok()
 });
