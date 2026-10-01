@@ -1,19 +1,31 @@
 import express from 'express';
 import cors from 'cors';
 import { printTicket } from "../printer/handlePrint";
-
+import 'dotenv/config';
 
 const app = express();
-app.use(cors()); 
+app.use(cors({
+  origin: "https://www.empana.com.ar",
+  methods: ["POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "ngrok-skip-browser-warning"],
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+
+
 app.use(express.json());
 
+
 app.post('/print', async (req, res) => {
-  const sale = req.body;
+  const sale = req.body.data;
+	console.log("Imprimiendo ticket de orden #",sale.orderNumber)
+
     try {
 
       const printRes = await printTicket(sale)
       if (!printRes.success) {
-        return res.status(500).json({ success: false, error: printRes.message });
+	return    res.status(500).json({ success: false, error: printRes.message });
       } 
       return res.status(200).json({message: "Printing confirmed!"})
   } catch (error) {
@@ -22,6 +34,11 @@ app.post('/print', async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
-  console.log('🚀 Puente de Impresión Empanapp corriendo en http://localhost:3001');
-});
+export function initExpress() {
+  app.listen(3001, '0.0.0.0', () => {
+    console.log('🚀 3. Express escuchando nativamente en el puerto 3001');
+  });
+}
+
+
+initExpress()

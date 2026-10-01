@@ -27,13 +27,14 @@ const formatLine = (
 };
 
 export async function printTicket(data: TicketData) {
-  const printer = new ThermalPrinter({
+	
+ const printer = new ThermalPrinter({
     type: PrinterTypes.EPSON,
     interface: `tcp://${PRINTER_IP}`,
     characterSet: CharacterSet.WPC1252, // Para tildes y Ñ
     removeSpecialCharacters: false,
   });
-
+  
   const isConnected = await printer.isPrinterConnected();
   if (!isConnected) {
     throw new Error("La impresora no responde");
@@ -75,9 +76,19 @@ export async function printTicket(data: TicketData) {
   printer.alignCenter();
   printer.println(SPACER);
   printer.alignLeft();
+const groupedItems: Record<string, TicketData["items"][number]> = {};
 
+data.items.forEach((item: any) => {
+  if (groupedItems[item.code]) {
+    // Si ya existe el código, sumamos la cantidad
+    groupedItems[item.code].quantity += item.quantity;
+  } else {
+    // Si no existe, creamos una copia para no mutar los datos originales
+    groupedItems[item.code] = { ...item };
+  }
+});
   // Detalle de Items
-  data.items.forEach((item: any) => {
+  Object.values(groupedItems).forEach((item: any) => {
     printer.alignLeft();
     printer.println(`${item.name}`); // Nombre arriba libre
 
@@ -134,7 +145,7 @@ export async function printTicket(data: TicketData) {
     `${data.customer.toUpperCase()} #${data.orderNumber.toString().padStart(4, "0")}`,
   );
 
-  data.items
+  Object.values(groupedItems)
     .filter((i) => !!i.code)
     .forEach((item: TicketData["items"][number]) => {
       printer.alignLeft();
