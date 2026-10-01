@@ -1,6 +1,6 @@
 {
   "name": "empanapp-printer-bridge",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Bridge printer for empanapp",
   "main": "index.ts",
   "scripts": {
@@ -12,16 +12,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@afipsdk/afip.js": "^0.7.7",
+    "@napi-rs/canvas": "^1.0.10",
     "@ngrok/ngrok": "^1.7.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "node-thermal-printer": "^4.6.0"
+    "node-thermal-printer": "^4.6.0",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.8.0",
+    "@types/qrcode": "^1.5.6",
     "tsx": "^4.22.1",
     "typescript": "^6.0.3"
   }
