@@ -4,31 +4,38 @@ import path from "path";
 import { CreateInvoiceDTO, InvoiceFiscalData } from "../types/arca.types";
 import { getCuitData } from "../utils/arca.utils";
 
-let afipInstance: any = null;
-function getAfipClient(cuit: number) {
-  if (!afipInstance) {
-    const isProd = process.env.AFIP_PRODUCTION === "true";
-    const cuitRaw = cuit || "";
-    if (!cuitRaw) {
-      throw new Error(
-        "❌ AFIP_CUIT no está definido en las variables de entorno",
-      );
-    }
+const afipClients: Record<string, any> = {};
+function getAfipClient(cuitInput: number) {
+  const cuitStr = String(cuitInput).replace(/\D/g, "");
 
-    const certPath = path.resolve(
-      process.cwd(),
-      `certs/${isProd ? "prod" : "dev"}/${cuit}-cert.crt`,
-    );
-    const keyPath = path.resolve(process.cwd(), `certs/${cuit}-key.key`);
-
-    afipInstance = new Afip({
-      CUIT: cuitRaw,
-      cert: certPath,
-      key: keyPath,
-      production: isProd,
-    });
+  if (!cuitStr) {
+    throw new Error("❌ CUIT no provisto para inicializar AFIP");
   }
-  return afipInstance;
+
+  // Si ya tenemos el cliente de este CUIT, lo reutilizamos
+  if (afipClients[cuitStr]) {
+    return afipClients[cuitStr];
+  }
+
+  const isProd =
+    process.env.NODE_ENV === "production" ||
+    process.env.AFIP_PRODUCTION === "true";
+  const certsDir = process.env.AFIP_CERT_PATH
+    ? path.resolve(process.cwd(), process.env.AFIP_CERT_PATH)
+    : path.resolve(process.cwd(), "certs");
+
+  const prefix = isProd ? "prod_" : "";
+  const certPath = path.join(certsDir, `${prefix}${cuitStr}-cert.crt`);
+  const keyPath = path.join(certsDir, `${prefix}${cuitStr}-key.key`);
+
+  afipClients[cuitStr] = new Afip({
+    CUIT: parseInt(cuitStr, 10),
+    cert: certPath,
+    key: keyPath,
+    production: isProd,
+  });
+
+  return afipClients[cuitStr];
 }
 
 export class ArcaService {

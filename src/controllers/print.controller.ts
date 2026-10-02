@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { TicketData } from "../types/ticket.types";
+import { SaleData } from "../types/ticket.types";
 import { ArcaService } from "../services/arca.service";
 import { PrinterService } from "../services/printer.service";
 import { TicketPreviewService } from "../services/ticket-preview-service";
 
 export class PrintController {
   public async printTicket(
-    req: Request<any, any, { data: TicketData }>,
+    req: Request<any, any, { data: SaleData }>,
     res: Response,
   ) {
     const sale = req.body.data;
