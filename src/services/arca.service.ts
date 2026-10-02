@@ -24,9 +24,9 @@ function getAfipClient(cuitInput: number) {
     ? path.resolve(process.cwd(), process.env.AFIP_CERT_PATH)
     : path.resolve(process.cwd(), "certs");
 
-  const prefix = isProd ? "prod_" : "";
-  const certPath = path.join(certsDir, `${prefix}${cuitStr}-cert.crt`);
-  const keyPath = path.join(certsDir, `${prefix}${cuitStr}-key.key`);
+  const prefix = isProd ? "prod" : "dev";
+  const certPath = path.join(certsDir, `${prefix}/${cuitStr}-cert.crt`);
+  const keyPath = path.join(certsDir, `/${cuitStr}-key.key`);
 
   afipClients[cuitStr] = new Afip({
     CUIT: parseInt(cuitStr, 10),
@@ -83,7 +83,7 @@ export class ArcaService {
     };
 
     const respCAE = await afip.ElectronicBilling.createVoucher(payload);
-    const cuitNumber = parseInt(process.env.AFIP_CUIT!.replace(/\D/g, ""), 10);
+    const cuitNumber = dto.cuit;
 
     const qrPayload = {
       ver: 1,
