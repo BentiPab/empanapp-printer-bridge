@@ -1,4 +1,4 @@
-export const ANCHO_TICKET = 82;
+export const ANCHO_TICKET = 41;
 export const SPACER = "-".repeat(Math.max(1, ANCHO_TICKET));
 
 export const priceParser = (value: number): string => {

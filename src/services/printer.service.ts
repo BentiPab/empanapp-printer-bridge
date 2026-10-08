@@ -5,7 +5,7 @@ import {
   PrinterTypes,
   CharacterSet,
 } from "node-thermal-printer";
-import { TicketData } from "../types/ticket.types";
+import { SaleData } from "../types/ticket.types";
 import { formatLine, priceParser, SPACER } from "../utils/printer.utils";
 import { getCuitData } from "../utils/arca.utils";
 import { ARCAData } from "../types/arca.types";
@@ -14,7 +14,7 @@ const PRINTER_IP = process.env.PRINTER_IP || "192.168.1.100";
 
 export class PrinterService {
   static async printTicket(
-    data: TicketData,
+    data: SaleData,
   ): Promise<{ success: boolean; message?: string }> {
     const printer = new ThermalPrinter({
       type: PrinterTypes.EPSON,
@@ -99,7 +99,7 @@ export class PrinterService {
     printer.println(SPACER);
 
     // 3. Detalle de Items agrupados
-    const groupedItems: Record<string, TicketData["items"][number]> = {};
+    const groupedItems: Record<string, SaleData["items"][number]> = {};
     data.items.forEach((item) => {
       const key = item.code || item.name;
       if (groupedItems[key]) {
@@ -180,22 +180,23 @@ export class PrinterService {
     printer.println(formatLine(fechaHora, orderNro));
     printer.cut();
 
-    // 7. Comanda de cocina / empaque
-    printer.alignCenter();
-    printer.setTextSize(3, 3);
-    printer.println(
-      `${data.customer.toUpperCase()} #${data.orderNumber.toString().padStart(4, "0")}`,
-    );
+    if (!data.isFiscal) {
+      // 7. Comanda de cocina / empaque
+      printer.alignCenter();
+      printer.setTextSize(3, 3);
+      printer.println(
+        `${data.customer.toUpperCase()} #${data.orderNumber.toString().padStart(4, "0")}`,
+      );
 
-    printer.setTextNormal();
-    Object.values(groupedItems)
-      .filter((i) => !!i.code)
-      .forEach((item) => {
-        printer.alignLeft();
-        printer.println(`${item.quantity}   ${item.code}`);
-      });
+      Object.values(groupedItems)
+        .filter((i) => !!i.code)
+        .forEach((item) => {
+          printer.alignLeft();
+          printer.println(`${item.quantity}   ${item.code}`);
+        });
 
-    printer.cut();
+      printer.cut();
+    }
 
     try {
       await printer.execute();

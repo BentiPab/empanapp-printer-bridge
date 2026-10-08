@@ -2,14 +2,14 @@ import { createCanvas, loadImage } from "@napi-rs/canvas";
 import QRCode from "qrcode";
 import fs from "fs";
 import path from "path";
-import { TicketData } from "../types/ticket.types";
+import { SaleData } from "../types/ticket.types";
 import { priceParser, SPACER } from "../utils/printer.utils";
 import { getCuitData } from "../utils/arca.utils";
 import { ARCAData } from "../types/arca.types";
 
 export class TicketPreviewService {
   static async generateTicketImage(
-    data: TicketData,
+    data: SaleData,
     outputPath?: string,
   ): Promise<Buffer> {
     const width = 576; // Ancho estándar de papel 80mm
@@ -149,7 +149,7 @@ export class TicketPreviewService {
     printSpacer();
 
     // 3. Detalle de Items
-    const groupedItems: Record<string, TicketData["items"][number]> = {};
+    const groupedItems: Record<string, SaleData["items"][number]> = {};
     data.items.forEach((item) => {
       const key = item.code || item.name;
       if (groupedItems[key]) {
