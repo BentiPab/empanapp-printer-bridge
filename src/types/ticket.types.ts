@@ -7,10 +7,6 @@ export interface TicketItem {
   code?: string;
 }
 
-export interface TicketData extends SaleData {
-  fiscalData?: InvoiceFiscalData; // Datos inyectados si fue fiscal
-}
-
 export interface SaleData {
   orderNumber: number;
   customer: string;
@@ -20,4 +16,6 @@ export interface SaleData {
   isFiscal?: boolean;
   cuit?: number;
   items: TicketItem[];
+  newInvoice: boolean;
+  fiscalData?: InvoiceFiscalData;
 }

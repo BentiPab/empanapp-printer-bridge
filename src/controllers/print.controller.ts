@@ -15,10 +15,10 @@ export class PrintController {
     );
 
     try {
-      let fiscalData = undefined;
+      let fiscalData = sale.fiscalData;
 
       // Si viene flag de factura fiscal, autorizamos contra ARCA
-      if (sale.isFiscal && sale.cuit) {
+      if (sale.isFiscal && sale.cuit && sale.newInvoice) {
         fiscalData = await ArcaService.generateInvoice({
           cuit: sale.cuit,
           total: sale.total,
