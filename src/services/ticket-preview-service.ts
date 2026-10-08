@@ -105,7 +105,7 @@ export class TicketPreviewService {
         cursorY,
       );
       cursorY += lineHeight;
-      ctx.fillText(`CUIT: ${process.env.AFIP_CUIT}`, width / 2, cursorY);
+      ctx.fillText(`CUIT: ${data.cuit}`, width / 2, cursorY);
       cursorY += lineHeight;
       ctx.fillText("IVA: RESPONSABLE MONOTRIBUTO", width / 2, cursorY);
       cursorY += lineHeight;

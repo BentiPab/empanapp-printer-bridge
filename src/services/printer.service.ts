@@ -76,7 +76,7 @@ export class PrinterService {
 
       printer.println(arcaData.razonSocial || "EMPANÁ");
       printer.println(`Domicilio: ${arcaData.domicilio || ""}`);
-      printer.println(`CUIT: ${process.env.AFIP_CUIT}`);
+      printer.println(`CUIT: ${data.cuit}`);
       printer.println("IVA: RESPONSABLE MONOTRIBUTO");
       printer.println(`IIBB: ${arcaData.iibb || ""}`);
       printer.println(`Inicio Act.: ${arcaData.inicAct || ""}`);
