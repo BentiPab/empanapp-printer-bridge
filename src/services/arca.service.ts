@@ -18,7 +18,6 @@ function getAfipClient(cuitInput: number) {
   }
 
   const isProd =
-    process.env.NODE_ENV === "production" ||
     process.env.AFIP_PRODUCTION === "true";
   const certsDir = process.env.AFIP_CERT_PATH
     ? path.resolve(process.cwd(), process.env.AFIP_CERT_PATH)
