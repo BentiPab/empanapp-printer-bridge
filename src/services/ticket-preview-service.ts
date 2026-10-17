@@ -4,8 +4,6 @@ import fs from "fs";
 import path from "path";
 import { SaleData } from "../types/ticket.types";
 import { priceParser, SPACER } from "../utils/printer.utils";
-import { getCuitData } from "../utils/arca.utils";
-import { ARCAData } from "../types/arca.types";
 
 export class TicketPreviewService {
   static async generateTicketImage(
@@ -17,14 +15,9 @@ export class TicketPreviewService {
     const padding = 28;
     const rightMargin = width - padding;
 
-    let arcaData = {} as ARCAData;
-    if (data.isFiscal && data.cuit) {
-      arcaData = getCuitData(data?.cuit);
-    }
-
     // Altura calculada para contener comanda y factura
     const baseLinesCount = 38 + data.items.length * 3;
-    const extraFiscalHeight = data.isFiscal && data.isFiscal ? 320 : 0;
+    const extraFiscalHeight = data.fiscalData ? 320 : 0;
     const height = baseLinesCount * lineHeight + extraFiscalHeight;
 
     const canvas = createCanvas(width, height);
@@ -68,13 +61,21 @@ export class TicketPreviewService {
     }
 
     // 2. Encabezado
-    if (data.fiscalData && data.isFiscal) {
-      const letra = data.fiscalData.tipoComprobante === 11 ? "C" : "B";
-      const ptoVta = String(data.fiscalData.puntoVenta).padStart(4, "0");
-      const nroComp = String(data.fiscalData.numeroComprobante).padStart(
-        8,
-        "0",
-      );
+    if (data.fiscalData) {
+      const {
+        invoiceNumber,
+        iibbId,
+        invoiceType,
+        legalEntity,
+        salePoint,
+        startActivities,
+        address,
+        cuit,
+        createdAt,
+      } = data.fiscalData;
+      const letra = invoiceType === 11 ? "C" : "B";
+      const ptoVta = String(salePoint).padStart(4, "0");
+      const nroComp = String(invoiceNumber).padStart(8, "0");
 
       ctx.textAlign = "center";
       ctx.font = "bold 32px 'Courier New', monospace";
@@ -89,7 +90,7 @@ export class TicketPreviewService {
       ctx.fillText(`${ptoVta}-${nroComp}`, width / 2, cursorY);
       cursorY += lineHeight;
       ctx.fillText(
-        `Fecha: ${new Date().toLocaleString("es-AR")}`,
+        `Fecha: ${new Date(createdAt).toLocaleString("es-AR")}`,
         width / 2,
         cursorY,
       );
@@ -97,22 +98,18 @@ export class TicketPreviewService {
 
       printSpacer();
 
-      ctx.fillText(arcaData.razonSocial || "EMPANÁ", width / 2, cursorY);
+      ctx.fillText(legalEntity, width / 2, cursorY);
       cursorY += lineHeight;
-      ctx.fillText(
-        `Domicilio: ${arcaData.domicilio || ""}`,
-        width / 2,
-        cursorY,
-      );
+      ctx.fillText(`Domicilio: ${address || ""}`, width / 2, cursorY);
       cursorY += lineHeight;
-      ctx.fillText(`CUIT: ${data.cuit}`, width / 2, cursorY);
+      ctx.fillText(`CUIT: ${cuit}`, width / 2, cursorY);
       cursorY += lineHeight;
       ctx.fillText("IVA: RESPONSABLE MONOTRIBUTO", width / 2, cursorY);
       cursorY += lineHeight;
-      ctx.fillText(`IIBB: ${arcaData.iibb || ""}`, width / 2, cursorY);
+      ctx.fillText(`IIBB: ${iibbId || ""}`, width / 2, cursorY);
       cursorY += lineHeight;
       ctx.fillText(
-        `Inicio Act.: ${arcaData.inicAct || ""}`,
+        `Inicio Act.: ${new Date(startActivities).toISOString().split("T")[0]}`,
         width / 2,
         cursorY,
       );
@@ -207,7 +204,7 @@ export class TicketPreviewService {
     ctx.fillText(priceParser(data.total), rightMargin, cursorY);
     cursorY += lineHeight * 1.2;
 
-    if (!data.fiscalData || !data.isFiscal) {
+    if (!data.fiscalData) {
       ctx.font = "18px 'Courier New', monospace";
       ctx.textAlign = "left";
       ctx.fillText("Efectivo -10%", padding, cursorY);
@@ -218,10 +215,11 @@ export class TicketPreviewService {
     }
 
     // 5. Pie Fiscal con QR real
-    if (data.fiscalData && data.isFiscal) {
+    if (data.fiscalData) {
+      const { cae, qrUrl, caeExpirationDate } = data.fiscalData;
       printSpacer();
 
-      const qrBuffer = await QRCode.toBuffer(data.fiscalData.qrUrl, {
+      const qrBuffer = await QRCode.toBuffer(qrUrl, {
         width: 170,
         margin: 1,
         errorCorrectionLevel: "M",
@@ -232,9 +230,9 @@ export class TicketPreviewService {
 
       ctx.textAlign = "center";
       ctx.font = "18px 'Courier New', monospace";
-      ctx.fillText(`CAE: ${data.fiscalData.cae}`, width / 2, cursorY);
+      ctx.fillText(`CAE: ${cae}`, width / 2, cursorY);
       cursorY += lineHeight;
-      ctx.fillText(`Vto. CAE: ${data.fiscalData.caeVto}`, width / 2, cursorY);
+      ctx.fillText(`Vto. CAE: ${caeExpirationDate}`, width / 2, cursorY);
       cursorY += lineHeight;
     }
 
@@ -301,7 +299,7 @@ export class TicketPreviewService {
     const imageBuffer = finalCanvas.toBuffer("image/jpeg");
 
     fs.writeFileSync(
-      outputPath || `${data.isFiscal ? "fiscal" : "non-fiscal"}-ticket.jpg`,
+      outputPath || `${data.fiscalData ? "fiscal" : "non-fiscal"}-ticket.jpg`,
       imageBuffer,
     );
 

@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { SaleData } from "../types/ticket.types";
-import { ArcaService } from "../services/arca.service";
 import { PrinterService } from "../services/printer.service";
 import { TicketPreviewService } from "../services/ticket-preview-service";
 
@@ -11,19 +10,10 @@ export class PrintController {
   ) {
     const sale = req.body.data;
     console.log(
-      `🖨️ Procesando ticket de orden #${sale.orderNumber} (Fiscal: ${Boolean(sale.isFiscal)})`,
+      `🖨️ Procesando ticket de orden #${sale.orderNumber} (Fiscal: ${Boolean(sale.fiscalData)})`,
     );
 
     try {
-      let fiscalData = sale.fiscalData;
-
-      // Si viene flag de factura fiscal, autorizamos contra ARCA
-      if (sale.isFiscal && sale.cuit && sale.newInvoice) {
-        fiscalData = await ArcaService.generateInvoice({
-          cuit: sale.cuit,
-          total: sale.total,
-        });
-      }
       let printRes: { success: boolean; message?: string } = {
         success: true,
         message: "",
@@ -31,12 +21,10 @@ export class PrintController {
       if (process.env.PRINTER_PRODUCTION === "true") {
         printRes = await PrinterService.printTicket({
           ...sale,
-          fiscalData,
         });
       } else {
-        await TicketPreviewService.generateTicketImage({ ...sale, fiscalData });
+        await TicketPreviewService.generateTicketImage({ ...sale });
       }
-      // Se imprime con o sin datos fiscales según corresponda
 
       if (!printRes.success) {
         return res
@@ -47,8 +35,6 @@ export class PrintController {
       return res.status(200).json({
         success: true,
         message: "Ticket impreso correctamente",
-        fiscal: Boolean(fiscalData),
-        fiscalData,
       });
     } catch (error) {
       console.error("❌ Error en el puente de impresión:", error);

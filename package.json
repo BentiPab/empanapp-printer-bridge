@@ -1,6 +1,6 @@
 {
   "name": "empanapp-printer-bridge",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Bridge printer for empanapp",
   "main": "index.ts",
   "scripts": {

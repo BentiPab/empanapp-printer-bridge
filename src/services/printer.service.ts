@@ -7,8 +7,6 @@ import {
 } from "node-thermal-printer";
 import { SaleData } from "../types/ticket.types";
 import { formatLine, priceParser, SPACER } from "../utils/printer.utils";
-import { getCuitData } from "../utils/arca.utils";
-import { ARCAData } from "../types/arca.types";
 
 const PRINTER_IP = process.env.PRINTER_IP || "192.168.1.100";
 
@@ -26,11 +24,6 @@ export class PrinterService {
     const isConnected = await printer.isPrinterConnected();
     if (!isConnected) {
       throw new Error("La impresora no responde en la red local");
-    }
-
-    let arcaData = {} as ARCAData;
-    if (data.isFiscal && data.cuit) {
-      arcaData = getCuitData(data.cuit);
     }
 
     printer.alignCenter();
@@ -54,13 +47,21 @@ export class PrinterService {
     }
 
     // 2. Encabezado: Fiscal vs No Fiscal
-    if (data.fiscalData && data.isFiscal) {
-      const letra = data.fiscalData.tipoComprobante === 11 ? "C" : "B";
-      const ptoVta = String(data.fiscalData.puntoVenta).padStart(4, "0");
-      const nroComp = String(data.fiscalData.numeroComprobante).padStart(
-        8,
-        "0",
-      );
+    if (data.fiscalData) {
+      const {
+        invoiceNumber,
+        iibbId,
+        invoiceType,
+        legalEntity,
+        salePoint,
+        startActivities,
+        address,
+        cuit,
+        createdAt,
+      } = data.fiscalData;
+      const letra = invoiceType === 11 ? "C" : "B";
+      const ptoVta = String(salePoint).padStart(4, "0");
+      const nroComp = String(invoiceNumber).padStart(8, "0");
 
       printer.setTextDoubleHeight();
       printer.setTextDoubleWidth();
@@ -70,16 +71,18 @@ export class PrinterService {
       printer.println("Codigo N 011");
       printer.println(`FACTURA ${letra}`);
       printer.println(`${ptoVta}-${nroComp}`);
-      printer.println(`Fecha: ${new Date().toLocaleString("es-AR")}`);
+      printer.println(`Fecha: ${new Date(createdAt).toLocaleString("es-AR")}`);
 
       printer.println(SPACER);
 
-      printer.println(arcaData.razonSocial || "EMPANÁ");
-      printer.println(`Domicilio: ${arcaData.domicilio || ""}`);
-      printer.println(`CUIT: ${data.cuit}`);
+      printer.println(legalEntity || "EMPANÁ");
+      printer.println(`Domicilio: ${address || ""}`);
+      printer.println(`CUIT: ${cuit}`);
       printer.println("IVA: RESPONSABLE MONOTRIBUTO");
-      printer.println(`IIBB: ${arcaData.iibb || ""}`);
-      printer.println(`Inicio Act.: ${arcaData.inicAct || ""}`);
+      printer.println(`IIBB: ${iibbId || ""}`);
+      printer.println(
+        `Inicio Act.: ${new Date(startActivities).toISOString().split("T")[0]}`,
+      );
 
       printer.println(SPACER);
 
@@ -142,14 +145,14 @@ export class PrinterService {
     printer.setTextNormal();
 
     // Descuento en efectivo (solo visible en venta no fiscal)
-    if (!data.fiscalData || !data.isFiscal) {
+    if (!data.fiscalData) {
       printer.println(
         formatLine("Efectivo -10%", `${priceParser(data.total * 0.9)}`),
       );
     }
 
     // 5. Pie Fiscal (QR oficial + CAE)
-    if (data.fiscalData && data.isFiscal) {
+    if (data.fiscalData) {
       printer.alignCenter();
       printer.println(SPACER);
       printer.newLine();
@@ -161,7 +164,7 @@ export class PrinterService {
 
       printer.newLine();
       printer.println(`CAE: ${data.fiscalData.cae}`);
-      printer.println(`Vto. CAE: ${data.fiscalData.caeVto}`);
+      printer.println(`Vto. CAE: ${data.fiscalData.caeExpirationDate}`);
     }
 
     printer.alignCenter();
@@ -180,7 +183,7 @@ export class PrinterService {
     printer.println(formatLine(fechaHora, orderNro));
     printer.cut();
 
-    if (!data.isFiscal) {
+    if (!data.fiscalData) {
       // 7. Comanda de cocina / empaque
       printer.alignCenter();
       printer.setTextSize(3, 3);
