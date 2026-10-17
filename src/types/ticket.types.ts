@@ -13,9 +13,6 @@ export interface SaleData {
   total: number;
   subtotal: number;
   discountAmount: number;
-  isFiscal?: boolean;
-  cuit?: number;
   items: TicketItem[];
-  newInvoice: boolean;
   fiscalData?: InvoiceFiscalData;
 }
